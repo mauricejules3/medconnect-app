@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
+import LiveMap from '../components/LiveMap'
 import './Ambulance.css'
 
 function Ambulance() {
@@ -142,6 +143,18 @@ function Ambulance() {
         )}
 
         {error && <p className="location-error">{error}</p>}
+      </section>
+
+      {/* Live map */}
+      <section className="ambulance-map-section">
+        <h2>Live map</h2>
+        <p className="map-subtitle">
+          Your position and the patient's position, updating live.
+        </p>
+        <LiveMap
+          userLocation={userLocation}
+          ambulanceLocation={location}
+        />
       </section>
     </main>
   )

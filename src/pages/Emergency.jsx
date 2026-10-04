@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
+import LiveMap from '../components/LiveMap'
 import './Emergency.css'
 
 const CONTACTS = [
@@ -162,6 +163,18 @@ function Emergency() {
         </div>
       </section>
 
+      {/* Live map */}
+      <section className="emergency-map-section">
+        <h2>Live map</h2>
+        <p className="map-subtitle">
+          Both you and the ambulance appear here in real time.
+        </p>
+        <LiveMap
+          userLocation={location}
+          ambulanceLocation={ambulanceLocation}
+        />
+      </section>
+
       {/* Contacts */}
       <section className="emergency-contacts">
         <h2>Emergency contacts</h2>
@@ -178,12 +191,8 @@ function Emergency() {
         </div>
       </section>
 
-      <p className="emergency-disclaimer">
-        ⚠️ MedConnect is a demo. In a real emergency, always call your local
-        emergency number directly.
-      </p>
+      
     </main>
   )
 }
-
 export default Emergency
