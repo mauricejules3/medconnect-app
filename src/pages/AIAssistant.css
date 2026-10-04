@@ -1,0 +1,141 @@
+.assistant-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 5% 60px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.assistant-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.assistant-avatar {
+  background: #0878d1;
+  color: white;
+  width: 55px;
+  height: 55px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.assistant-header h1 {
+  color: #142d4e;
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.assistant-header p {
+  color: #667085;
+  font-size: 14px;
+}
+
+.chat-window {
+  flex: 1;
+  background: white;
+  border: 1px solid #e8edf3;
+  border-radius: 16px;
+  padding: 22px;
+  overflow-y: auto;
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  line-height: 1.5;
+  font-size: 15px;
+  word-wrap: break-word;
+}
+
+.chat-bubble.ai {
+  background: #f0f8ff;
+  color: #142d4e;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-bubble.user {
+  background: #0878d1;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #d5dde6;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.chat-input-row input:focus {
+  border-color: #0878d1;
+  box-shadow: 0 0 0 3px #0878d122;
+}
+
+.chat-input-row button {
+  background: #0878d1;
+  color: white;
+  border: none;
+  padding: 0 26px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chat-input-row button:hover {
+  background: #0560a8;
+}
+
+.assistant-disclaimer {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 20px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .assistant-page {
+    padding: 25px 5% 40px;
+  }
+
+  .chat-window {
+    max-height: 60vh;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
+  }
+}.chat-bubble.typing {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.chat-input-row button:disabled,
+.chat-input-row input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

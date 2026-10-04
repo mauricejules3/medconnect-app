@@ -1,0 +1,247 @@
+/* HERO */
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  gap: 40px;
+  padding: 85px 9%;
+  background: #f0f8ff;
+}
+
+.tagline {
+  color: #0878d1;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.hero h1 {
+  font-size: clamp(38px, 5vw, 60px);
+  line-height: 1.12;
+  margin: 20px 0;
+  color: #142d4e;
+}
+
+.hero h1 span {
+  color: #0878d1;
+}
+
+.hero-content p {
+  color: #667085;
+  font-size: 17px;
+  line-height: 1.8;
+  max-width: 570px;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.emergency-btn {
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 16px 22px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.emergency-btn:hover {
+  background: #c72c39;
+}
+
+.learn-btn {
+  background: white;
+  color: #0878d1;
+  border: 1px solid #0878d1;
+  padding: 16px 22px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.learn-btn:hover {
+  background: #0878d1;
+  color: white;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 320px;
+}
+
+.medical-card {
+  background: white;
+  width: 280px;
+  padding: 40px 25px;
+  text-align: center;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px #0878d122;
+}
+
+.medical-icon {
+  background: #0878d1;
+  color: white;
+  font-size: 55px;
+  width: 100px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+  margin: auto;
+  border-radius: 25px;
+}
+
+.medical-card h2 {
+  color: #142d4e;
+}
+
+.medical-card p {
+  color: #667085;
+}
+
+.status {
+  background: #effaf3;
+  color: #16834a;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #16834a;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+/* SERVICES */
+.services {
+  padding: 75px 8%;
+}
+
+.section-heading {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-heading span {
+  color: #0878d1;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+
+.section-heading h2 {
+  font-size: 34px;
+  color: #142d4e;
+}
+
+.section-heading p {
+  color: #667085;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.service-card {
+  border: 1px solid #e8edf3;
+  padding: 30px;
+  border-radius: 16px;
+  background: white;
+  transition: 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px #0000000d;
+}
+
+.service-icon {
+  width: 55px;
+  height: 55px;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  border-radius: 13px;
+}
+
+.blue {
+  background: #e7f3ff;
+  color: #0878d1;
+}
+
+.red {
+  background: #fff0f0;
+  color: #e63946;
+}
+
+.green {
+  background: #e9f9ef;
+  color: #16834a;
+}
+
+.service-card h3 {
+  color: #142d4e;
+}
+
+.service-card p {
+  color: #667085;
+  line-height: 1.7;
+}
+
+.service-link {
+  color: #0878d1;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.service-link:hover {
+  text-decoration: underline;
+}
+
+/* ABOUT */
+.about {
+  text-align: center;
+  padding: 65px 10%;
+  background: #f0f8ff;
+}
+
+.about h2 {
+  color: #142d4e;
+}
+
+.about p {
+  max-width: 650px;
+  margin: auto;
+  color: #667085;
+  line-height: 1.8;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 55px 7%;
+  }
+
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
+    min-height: 250px;
+  }
+}

@@ -1,0 +1,145 @@
+.auth-page {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 5%;
+  background: #f0f8ff;
+}
+
+.auth-card {
+  background: white;
+  width: 100%;
+  max-width: 420px;
+  padding: 45px 35px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px #0878d11a;
+}
+
+.auth-icon {
+  background: #0878d1;
+  color: white;
+  font-size: 28px;
+  width: 55px;
+  height: 55px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  margin: 0 auto 20px;
+}
+
+.auth-card h1 {
+  text-align: center;
+  color: #142d4e;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: #667085;
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+  gap: 6px;
+}
+
+.auth-card input {
+  padding: 13px 15px;
+  border: 1px solid #d5dde6;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.auth-card input:focus {
+  border-color: #0878d1;
+  box-shadow: 0 0 0 3px #0878d122;
+}
+
+.auth-error {
+  background: #fff0f0;
+  color: #c72c39;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.auth-submit {
+  background: #0878d1;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 6px;
+}
+
+.auth-submit:hover {
+  background: #0560a8;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 14px;
+  color: #667085;
+}
+
+.auth-switch a {
+  color: #0878d1;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* Role selector for Signup */
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.role {
+  padding: 12px;
+  border: 1px solid #d5dde6;
+  border-radius: 10px;
+  background: white;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.role:hover {
+  border-color: #0878d1;
+}
+
+.role.active {
+  background: #0878d1;
+  color: white;
+  border-color: #0878d1;
+}
