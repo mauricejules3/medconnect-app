@@ -93,11 +93,6 @@ function Dashboard() {
   }
 
   // ✅ Verified — normal dashboard
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
-
   return (
     <main className="dashboard-page">
       <div className="dash-header">
@@ -110,10 +105,6 @@ function Dashboard() {
             Here's an overview of your MedConnect account.
           </p>
         </div>
-
-        <button onClick={handleLogout} className="dash-logout">
-          Log out
-        </button>
       </div>
 
       <div className="dash-stats">

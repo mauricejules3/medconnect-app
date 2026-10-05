@@ -2,17 +2,32 @@ import { useState, useEffect, useRef } from 'react'
 import { ref, set, onValue, serverTimestamp } from 'firebase/database'
 import { db } from '../firebase'
 
-const SESSION_ID = 'demo-session'  // hardcoded for now — will be dynamic later
+// Generate a short readable session ID (no confusing chars like I, O, 0, 1)
+export function generateSessionId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let id = 'EMG-'
+  for (let i = 0; i < 5; i++) {
+    id += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return id
+}
 
-export function useEmergencySession() {
+export function useEmergencySession(sessionId) {
   const [userLocation, setUserLocation] = useState(null)
   const [ambulanceLocation, setAmbulanceLocation] = useState(null)
   const [connected, setConnected] = useState(false)
   const unsubscribeRef = useRef(null)
 
-  // Listen to the entire session
+  // Listen to the session in Firebase
   useEffect(() => {
-    const sessionRef = ref(db, `emergencies/${SESSION_ID}`)
+    if (!sessionId) {
+      setConnected(false)
+      setUserLocation(null)
+      setAmbulanceLocation(null)
+      return
+    }
+
+    const sessionRef = ref(db, `emergencies/${sessionId}`)
 
     unsubscribeRef.current = onValue(sessionRef, (snapshot) => {
       setConnected(true)
@@ -24,12 +39,12 @@ export function useEmergencySession() {
     return () => {
       if (unsubscribeRef.current) unsubscribeRef.current()
     }
-  }, [])
+  }, [sessionId])
 
   // Write the user's location
   const updateUserLocation = async (loc) => {
-    if (!loc) return
-    await set(ref(db, `emergencies/${SESSION_ID}/userLocation`), {
+    if (!loc || !sessionId) return
+    await set(ref(db, `emergencies/${sessionId}/userLocation`), {
       lat: loc.lat,
       lng: loc.lng,
       accuracy: loc.accuracy,
@@ -39,8 +54,8 @@ export function useEmergencySession() {
 
   // Write the ambulance's location
   const updateAmbulanceLocation = async (loc) => {
-    if (!loc) return
-    await set(ref(db, `emergencies/${SESSION_ID}/ambulanceLocation`), {
+    if (!loc || !sessionId) return
+    await set(ref(db, `emergencies/${sessionId}/ambulanceLocation`), {
       lat: loc.lat,
       lng: loc.lng,
       accuracy: loc.accuracy,
@@ -49,7 +64,7 @@ export function useEmergencySession() {
   }
 
   return {
-    sessionId: SESSION_ID,
+    sessionId,
     connected,
     userLocation,
     ambulanceLocation,

@@ -294,3 +294,268 @@
     grid-template-columns: 1fr;
   }
 }
+.session-share-block {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f0f8ff;
+  border: 1px solid #cce4f7;
+  border-radius: 12px;
+}
+
+.session-share-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.session-id-display {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0878d1;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.copy-session-btn {
+  background: #0878d1;
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.copy-session-btn:hover {
+  background: #0560a8;
+}
+
+.session-share-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #667085;
+  line-height: 1.5;
+}
+/* ─── Emergency action buttons ─────────────────────── */
+
+.emergency-primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 16px;
+  padding: 22px 26px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: inherit;
+  background: #0878d1;
+  color: white;
+  box-shadow: 0 12px 30px #0878d133;
+}
+
+.emergency-primary-btn:hover {
+  background: #0560a8;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px #0878d144;
+}
+
+.emergency-secondary-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 14px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: inherit;
+  background: #e63946;
+  color: white;
+  box-shadow: 0 12px 30px #e6394633;
+}
+
+.emergency-secondary-btn:hover {
+  background: #c72c39;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px #e6394644;
+}
+
+.emergency-btn-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.emergency-btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emergency-btn-text strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.emergency-btn-text small {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.emergency-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 16px;
+  text-align: center;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* ─── Dispatch card (waiting / failed) ─────────────── */
+
+.dispatch-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 34px 26px;
+  border-radius: 18px;
+  text-align: center;
+  animation: dispatch-appear 0.35s ease-out;
+}
+
+@keyframes dispatch-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dispatch-card.waiting {
+  background: #f0f8ff;
+  border: 1px solid #cce4f7;
+}
+
+.dispatch-card.failed {
+  background: #fff0f0;
+  border: 1px solid #f7c5c8;
+}
+
+.dispatch-card h2 {
+  color: #142d4e;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.dispatch-sub {
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Spinner */
+.dispatch-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #cce4f7;
+  border-top-color: #0878d1;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Failed icon */
+.dispatch-failed-icon {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+/* Countdown */
+.dispatch-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 16px 0 20px;
+}
+
+.countdown-number {
+  font-size: 56px;
+  font-weight: 800;
+  color: #0878d1;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.countdown-label {
+  font-size: 12px;
+  color: #667085;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.dispatch-hint-small {
+  font-size: 13px;
+  color: #667085;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.dispatch-cancel-btn {
+  background: transparent;
+  color: #667085;
+  border: 1px solid #d5dde6;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.dispatch-cancel-btn:hover {
+  color: #344054;
+  border-color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .dispatch-card {
+    padding: 26px 20px;
+  }
+
+  .countdown-number {
+    font-size: 46px;
+  }
+
+  .emergency-primary-btn,
+  .emergency-secondary-btn {
+    padding: 18px 20px;
+  }
+
+  .emergency-btn-icon {
+    font-size: 26px;
+  }
+}

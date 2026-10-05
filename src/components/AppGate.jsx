@@ -3,8 +3,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import Splash from './Splash'
 import Navbar from './Navbar'
+import BottomNav from './BottomNav'
 import Footer from './Footer'
 import Dashboard from '../pages/Dashboard'
+import Profile from '../pages/Profile'
 import AIAssistant from '../pages/AIAssistant'
 import Emergency from '../pages/Emergency'
 import Ambulance from '../pages/Ambulance'
@@ -49,9 +51,11 @@ function AppGate() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/assistant" element={<AIAssistant />} />
         <Route path="/emergency" element={<Emergency />} />
         <Route path="/ambulance" element={<Ambulance />} />
+        <Route path="/ambulance/:sessionId" element={<Ambulance />} />
         <Route path="/firebase-test" element={<FirebaseTest />} />
         <Route path="/welcome" element={<Home />} />
         {/* Fallback → dashboard */}
@@ -59,6 +63,7 @@ function AppGate() {
       </Routes>
 
       <Footer />
+      <BottomNav />
     </div>
   )
 }

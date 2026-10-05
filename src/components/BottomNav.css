@@ -1,0 +1,55 @@
+.bottom-nav {
+  display: none; /* hidden on desktop by default */
+}
+
+/* Only show on mobile */
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: white;
+    border-top: 1px solid #e8edf3;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+    z-index: 100;
+    /* Respect iPhone home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+.bottom-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  padding: 8px 2px;
+}
+
+.bottom-tab.active {
+  color: #0878d1;
+}
+
+.bottom-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottom-label {
+  font-size: 10px;
+  letter-spacing: 0.1px;
+}
+
+.bottom-tab.active .bottom-label {
+  font-weight: 800;
+}

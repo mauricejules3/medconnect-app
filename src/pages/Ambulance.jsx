@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
 import LiveMap from '../components/LiveMap'
 import './Ambulance.css'
 
 function Ambulance() {
+  const { sessionId: urlSessionId } = useParams()
+  const navigate = useNavigate()
+
+  const [sessionId, setSessionId] = useState(urlSessionId || '')
+  const [inputId, setInputId] = useState('')
+  const [joinError, setJoinError] = useState('')
   const [sharing, setSharing] = useState(false)
+
+  // If URL changes (e.g., from a deep link), sync the session ID
+  useEffect(() => {
+    if (urlSessionId) {
+      setSessionId(urlSessionId)
+    }
+  }, [urlSessionId])
 
   const { location, error, fetchLocation } = useGeolocation({
     watch: sharing,
@@ -13,18 +27,43 @@ function Ambulance() {
   })
 
   const {
-    sessionId,
     connected,
     userLocation,
     updateAmbulanceLocation,
-  } = useEmergencySession()
+  } = useEmergencySession(sessionId || null)
 
+  // Broadcast ambulance location while sharing
   useEffect(() => {
-    if (sharing && location) {
+    if (sharing && location && sessionId) {
       updateAmbulanceLocation(location)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharing, location])
+  }, [sharing, location, sessionId])
+
+  const handleJoin = (e) => {
+    e.preventDefault()
+    const trimmed = inputId.trim().toUpperCase()
+
+    if (!trimmed) {
+      setJoinError('Please enter a session ID.')
+      return
+    }
+
+    if (!trimmed.startsWith('EMG-') || trimmed.length < 9) {
+      setJoinError('Session IDs look like EMG-A3F2B. Please check the format.')
+      return
+    }
+
+    setJoinError('')
+    navigate(`/ambulance/${trimmed}`)
+  }
+
+  const handleLeave = () => {
+    setSharing(false)
+    setSessionId('')
+    setInputId('')
+    navigate('/ambulance')
+  }
 
   const toggleSharing = async () => {
     if (sharing) {
@@ -42,21 +81,66 @@ function Ambulance() {
     window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lng}`, '_blank')
   }
 
+  // ─── NO SESSION — Show join screen ──────────────────
+  if (!sessionId) {
+    return (
+      <main className="ambulance-page">
+        <div className="join-screen">
+          <div className="join-icon">🚑</div>
+          <h1>Join an emergency session</h1>
+          <p className="join-sub">
+            Enter the patient's session ID to connect with them.
+          </p>
+
+          <form onSubmit={handleJoin} className="join-form">
+            <label className="join-label">
+              Session ID
+              <input
+                type="text"
+                placeholder="EMG-A3F2B"
+                value={inputId}
+                onChange={(e) => {
+                  setInputId(e.target.value)
+                  setJoinError('')
+                }}
+                className="join-input"
+                autoFocus
+                autoCapitalize="characters"
+              />
+            </label>
+
+            {joinError && <p className="join-error">{joinError}</p>}
+
+            <button type="submit" className="join-btn">
+              Join Session
+            </button>
+          </form>
+
+          <p className="join-hint">
+            Ask the patient to share their session ID from their Lumo
+            Emergency screen. In the future, this will be sent to you
+            automatically via push notification.
+          </p>
+        </div>
+      </main>
+    )
+  }
+
+  // ─── JOINED — Dispatcher view ───────────────────────
   return (
     <main className="ambulance-page">
       <div className="ambulance-header">
         <div className="ambulance-badge">🚑</div>
         <div>
           <h1>Ambulance Dispatcher</h1>
-          <p>Live view of the emergency session</p>
+          <p>Session: <strong>{sessionId}</strong></p>
         </div>
+        <button className="leave-btn" onClick={handleLeave}>
+          Leave
+        </button>
       </div>
 
       <div className="ambulance-status-row">
-        <div>
-          <span className="loc-label">Session</span>
-          <span className="loc-value">{sessionId}</span>
-        </div>
         <div>
           <span className="loc-label">Connection</span>
           <span className="loc-value">

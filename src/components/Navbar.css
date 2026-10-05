@@ -53,18 +53,17 @@
   text-decoration: none;
   font-weight: 600;
   transition: background 0.2s;
+  font-family: inherit;
+  font-size: 15px;
 }
 
 .login-btn:hover {
   background: #0560a8;
 }
 
+/* Hide the entire navbar on mobile — bottom nav replaces it */
 @media (max-width: 768px) {
   .navbar {
-    padding: 16px 5%;
-  }
-
-  .navbar nav {
     display: none;
   }
 }
