@@ -6,7 +6,7 @@
 @media (max-width: 768px) {
   .bottom-nav {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     position: fixed;
     bottom: 0;
     left: 0;
@@ -16,8 +16,12 @@
     border-top: 1px solid #e8edf3;
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
     z-index: 100;
-    /* Respect iPhone home indicator */
     padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* 3 columns for ambulance drivers */
+  .bottom-nav.three-tabs {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

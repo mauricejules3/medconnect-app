@@ -9,10 +9,12 @@ function Dashboard() {
     user,
     role,
     emailVerified,
+    available,
     loading,
     logout,
     checkVerification,
     resendVerification,
+    updateAvailability,
   } = useAuth()
 
   const [checking, setChecking] = useState(false)
@@ -92,94 +94,174 @@ function Dashboard() {
     )
   }
 
-  // ✅ Verified — normal dashboard
+  // ─── Route to the right dashboard ─────────────────
+  if (role === 'ambulance') {
+    return <DriverDashboard user={user} available={available} onToggle={updateAvailability} />
+  }
+
+  return <PatientDashboard user={user} />
+}
+
+// ═══════════════════════════════════════════════════════
+// 👤 PATIENT DASHBOARD
+// ═══════════════════════════════════════════════════════
+function PatientDashboard({ user }) {
+  const contactsCount = (user.trustedContacts || []).length
+  const hasMedicalInfo = !!user.medicalInfo?.bloodType
+
   return (
     <main className="dashboard-page">
       <div className="dash-header">
         <div>
-          <span className="dash-tagline">
-            {role === 'ambulance' ? 'AMBULANCE PORTAL' : 'PATIENT PORTAL'}
-          </span>
+          <span className="dash-tagline">PATIENT PORTAL</span>
           <h1>Welcome, {user.name || user.email}</h1>
           <p className="dash-sub">
-            Here's an overview of your MedConnect account.
+            Need help? Start an emergency or ask the AI assistant.
           </p>
-        </div>
-      </div>
-
-      <div className="dash-stats">
-        <div className="stat-card">
-          <span className="stat-icon blue">◎</span>
-          <div>
-            <p className="stat-number">0</p>
-            <p className="stat-label">Upcoming Appointments</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <span className="stat-icon green">✚</span>
-          <div>
-            <p className="stat-number">0</p>
-            <p className="stat-label">Health Records</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <span className="stat-icon red">⌖</span>
-          <div>
-            <p className="stat-number">—</p>
-            <p className="stat-label">Emergency Contacts</p>
-          </div>
         </div>
       </div>
 
       <h2 className="dash-section-title">Quick actions</h2>
 
-      <div className="dash-actions">
-        {role === 'ambulance' ? (
-          <Link to="/ambulance" className="action-card">
-            <div className="action-icon red">🚑</div>
-            <div>
-              <h3>Ambulance Dispatcher</h3>
-              <p>See incoming emergency requests in real time.</p>
-            </div>
-          </Link>
-        ) : (
-          <Link to="/emergency" className="action-card">
-            <div className="action-icon red">⌖</div>
-            <div>
-              <h3>Emergency</h3>
-              <p>Request immediate help and share your location.</p>
-            </div>
-          </Link>
-        )}
-
-        <Link to="/assistant" className="action-card">
-          <div className="action-icon blue">✚</div>
+      <div className="patient-hero-action">
+        <Link to="/emergency" className="hero-action-card">
+          <div className="hero-action-icon">🚑</div>
           <div>
-            <h3>AI Medical Assistant</h3>
-            <p>Ask basic health questions and get guidance.</p>
+            <h3>Get Help Now</h3>
+            <p>Request emergency assistance in one tap</p>
+          </div>
+        </Link>
+      </div>
+
+      <div className="patient-secondary-actions">
+        <Link to="/assistant" className="secondary-action">
+          <span className="secondary-action-icon">💬</span>
+          <div>
+            <h4>AI Assistant</h4>
+            <p>Ask health questions</p>
           </div>
         </Link>
 
-        <div className="action-card disabled">
-          <div className="action-icon green">◎</div>
+        <Link to="/settings/contacts" className="secondary-action">
+          <span className="secondary-action-icon">👥</span>
           <div>
-            <h3>Book Appointment</h3>
-            <p>Coming soon — find a doctor and book a slot.</p>
+            <h4>Trusted contacts</h4>
+            <p>
+              {contactsCount > 0
+                ? `${contactsCount} saved`
+                : 'Add people to notify'}
+            </p>
+          </div>
+        </Link>
+
+        <Link to="/settings/medical" className="secondary-action">
+          <span className="secondary-action-icon">🏥</span>
+          <div>
+            <h4>Medical info</h4>
+            <p>
+              {hasMedicalInfo
+                ? `Blood type ${user.medicalInfo.bloodType}`
+                : 'Blood type, allergies…'}
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      <div className="dash-section">
+        <h2 className="dash-section-title">Your account</h2>
+        <div className="dash-account-info">
+          <p>
+            <strong>Email:</strong> {user.email} ✅
+          </p>
+          <p>
+            <strong>Role:</strong> 👤 Patient
+          </p>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+// ═══════════════════════════════════════════════════════
+// 🚑 AMBULANCE DRIVER DASHBOARD
+// ═══════════════════════════════════════════════════════
+function DriverDashboard({ user, available, onToggle }) {
+  return (
+    <main className="dashboard-page">
+      <div className="dash-header">
+        <div>
+          <span className="dash-tagline">AMBULANCE PORTAL</span>
+          <h1>Welcome, {user.name || user.email}</h1>
+          <p className="dash-sub">
+            Your dispatcher dashboard — stay available to receive emergencies.
+          </p>
+        </div>
+      </div>
+
+      {/* Availability toggle */}
+      <div className={`availability-card ${available ? 'online' : 'offline'}`}>
+        <div className="availability-status">
+          <span className="availability-dot" />
+          <div>
+            <span className="availability-label">Current status</span>
+            <span className="availability-value">
+              {available ? '🟢 Available' : '⚫ Offline'}
+            </span>
+          </div>
+        </div>
+        <button
+          className={`availability-btn ${available ? 'go-offline' : 'go-online'}`}
+          onClick={() => onToggle(!available)}
+        >
+          {available ? 'Go Offline' : 'Go Online'}
+        </button>
+      </div>
+
+      <h2 className="dash-section-title">Today's stats</h2>
+
+      <div className="dash-stats">
+        <div className="stat-card">
+          <span className="stat-icon red">🚨</span>
+          <div>
+            <p className="stat-number">0</p>
+            <p className="stat-label">Today's dispatches</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <span className="stat-icon green">✅</span>
+          <div>
+            <p className="stat-number">0</p>
+            <p className="stat-label">Completed runs</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <span className="stat-icon blue">⏱️</span>
+          <div>
+            <p className="stat-number">—</p>
+            <p className="stat-label">Avg response time</p>
           </div>
         </div>
       </div>
 
+      <h2 className="dash-section-title">Quick action</h2>
+
+      <div className="dash-actions">
+        <Link to="/ambulance" className="action-card">
+          <div className="action-icon red">🚨</div>
+          <div>
+            <h3>Open Dispatcher</h3>
+            <p>See incoming emergencies and manage sessions.</p>
+          </div>
+        </Link>
+      </div>
+
       <div className="dash-account-info">
-        <h3>Account details</h3>
+        <h3>Driver account</h3>
         <p>
           <strong>Email:</strong> {user.email} ✅
         </p>
         <p>
-          <strong>Role:</strong>{' '}
-          {role === 'ambulance' ? '🚑 Ambulance Driver' : '👤 Patient'}
-        </p>
-        <p>
-          <strong>User ID:</strong> <code>{user.uid}</code>
+          <strong>Role:</strong> 🚑 Ambulance Driver
         </p>
       </div>
     </main>

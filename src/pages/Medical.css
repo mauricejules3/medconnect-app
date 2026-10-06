@@ -1,0 +1,132 @@
+.medical-page {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 30px 6% 100px;
+}
+
+.medical-intro {
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+
+.medical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.medical-section {
+  margin-bottom: 22px;
+}
+
+.medical-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  font-weight: 700;
+  color: #142d4e;
+  gap: 8px;
+}
+
+.medical-label.small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+  margin-bottom: 12px;
+}
+
+.medical-subheading {
+  color: #142d4e;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eef2f7;
+}
+
+.medical-select,
+.medical-input,
+.medical-textarea {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid #d5dde6;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #142d4e;
+  background: white;
+  outline: none;
+  transition: border 0.2s;
+  box-sizing: border-box;
+}
+
+.medical-select:focus,
+.medical-input:focus,
+.medical-textarea:focus {
+  border-color: #0878d1;
+  box-shadow: 0 0 0 3px #0878d122;
+}
+
+.medical-textarea {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+.medical-help {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.medical-actions {
+  margin-top: 10px;
+}
+
+.medical-save-btn {
+  width: 100%;
+  padding: 16px;
+  background: #0878d1;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.medical-save-btn:hover:not(:disabled) {
+  background: #0560a8;
+}
+
+.medical-save-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.medical-saved-msg {
+  text-align: center;
+  color: #16834a;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.medical-privacy {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .medical-page {
+    padding: 20px 5% 100px;
+  }
+}

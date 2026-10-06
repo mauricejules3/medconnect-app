@@ -13,17 +13,20 @@ function Profile() {
 
   if (!user) return null
 
+  const isPatient = role === 'patient' || !role
+  const isAmbulance = role === 'ambulance'
+
   return (
     <main className="profile-page">
 
       <div className="profile-header">
         <div className="profile-avatar">
-          {role === 'ambulance' ? '🚑' : '👤'}
+          {isAmbulance ? '🚑' : '👤'}
         </div>
         <h1>{user.name || 'User'}</h1>
         <p className="profile-email">{user.email}</p>
         <span className={`profile-role ${role}`}>
-          {role === 'ambulance' ? '🚑 Ambulance Driver' : '👤 Patient'}
+          {isAmbulance ? '🚑 Ambulance Driver' : '👤 Patient'}
         </span>
       </div>
 
@@ -38,7 +41,7 @@ function Profile() {
         <div className="profile-row">
           <span className="profile-row-label">Role</span>
           <span className="profile-row-value">
-            {role === 'ambulance' ? 'Ambulance Driver' : 'Patient'}
+            {isAmbulance ? 'Ambulance Driver' : 'Patient'}
           </span>
         </div>
 
@@ -62,24 +65,46 @@ function Profile() {
 
         <button
           className="profile-link"
-          onClick={() => navigate('/emergency')}
+          onClick={() => navigate('/settings')}
         >
-          🚑 Emergency
+          ⚙️ Settings
         </button>
 
-        <button
-          className="profile-link"
-          onClick={() => navigate('/ambulance')}
-        >
-          🚨 Dispatcher
-        </button>
+        {/* Patient-only links */}
+        {isPatient && (
+          <>
+            <button
+              className="profile-link"
+              onClick={() => navigate('/emergency')}
+            >
+              🚑 Emergency
+            </button>
+
+            <button
+              className="profile-link"
+              onClick={() => navigate('/assistant')}
+            >
+              💬 AI Assistant
+            </button>
+          </>
+        )}
+
+        {/* Ambulance driver-only link */}
+        {isAmbulance && (
+          <button
+            className="profile-link"
+            onClick={() => navigate('/ambulance')}
+          >
+            🚨 Dispatcher
+          </button>
+        )}
       </div>
 
       <button className="profile-logout" onClick={handleLogout}>
         🚪 Log out
       </button>
 
-      <p className="profile-credit">Lumo · Built by mr_baller</p>
+      <p className="profile-credit">MedConnect · Built by mr_baller</p>
 
     </main>
   )

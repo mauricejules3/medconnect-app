@@ -74,6 +74,12 @@ function Login() {
             />
           </label>
 
+          <div className="forgot-password-row">
+            <Link to="/forgot-password" className="forgot-password-link">
+              Forgot password?
+            </Link>
+          </div>
+
           {error && <p className="auth-error">{error}</p>}
 
           <button type="submit" className="auth-submit" disabled={loading}>

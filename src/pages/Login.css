@@ -143,3 +143,19 @@
   color: white;
   border-color: #0878d1;
 }
+.forgot-password-row {
+  text-align: right;
+  margin-top: -8px;
+  margin-bottom: 4px;
+}
+
+.forgot-password-link {
+  font-size: 13px;
+  color: #0878d1;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}

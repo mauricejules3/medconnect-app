@@ -7,12 +7,16 @@ import BottomNav from './BottomNav'
 import Footer from './Footer'
 import Dashboard from '../pages/Dashboard'
 import Profile from '../pages/Profile'
+import Settings from '../pages/Settings'
+import Contacts from '../pages/Contacts'
+import Medical from '../pages/Medical'
 import AIAssistant from '../pages/AIAssistant'
 import Emergency from '../pages/Emergency'
 import Ambulance from '../pages/Ambulance'
 import FirebaseTest from '../pages/FirebaseTest'
 import Login from '../pages/Login'
 import Signup from '../pages/Signup'
+import ForgotPassword from '../pages/ForgotPassword'
 import Home from '../pages/Home'
 
 function AppGate() {
@@ -36,6 +40,7 @@ function AppGate() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/welcome" element={<Home />} />
         {/* Any other URL → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
@@ -52,6 +57,12 @@ function AppGate() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+
+        {/* Settings */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/contacts" element={<Contacts />} />
+        <Route path="/settings/medical" element={<Medical />} />
+
         <Route path="/assistant" element={<AIAssistant />} />
         <Route path="/emergency" element={<Emergency />} />
         <Route path="/ambulance" element={<Ambulance />} />

@@ -285,3 +285,220 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* ─── Availability card (driver) ───────────────────── */
+
+.availability-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 26px;
+  border-radius: 16px;
+  margin-bottom: 40px;
+  transition: all 0.3s;
+  flex-wrap: wrap;
+}
+
+.availability-card.online {
+  background: #e9f9ef;
+  border: 1px solid #b8e6c8;
+}
+
+.availability-card.offline {
+  background: #f5f7fa;
+  border: 1px solid #d5dde6;
+}
+
+.availability-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.availability-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.availability-card.online .availability-dot {
+  background: #16834a;
+  box-shadow: 0 0 0 4px rgba(22, 131, 74, 0.2);
+  animation: pulse-online 2s infinite;
+}
+
+.availability-card.offline .availability-dot {
+  background: #94a3b8;
+}
+
+@keyframes pulse-online {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(22, 131, 74, 0.2); }
+  50%      { box-shadow: 0 0 0 8px rgba(22, 131, 74, 0.1); }
+}
+
+.availability-label {
+  display: block;
+  font-size: 12px;
+  color: #667085;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.availability-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  color: #142d4e;
+  margin-top: 4px;
+}
+
+.availability-btn {
+  border: none;
+  padding: 14px 26px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.availability-btn.go-online {
+  background: #16834a;
+  color: white;
+  box-shadow: 0 8px 20px #16834a33;
+}
+
+.availability-btn.go-online:hover {
+  background: #116b3c;
+  transform: translateY(-2px);
+}
+
+.availability-btn.go-offline {
+  background: white;
+  color: #c72c39;
+  border: 1px solid #e8c5c8;
+}
+
+.availability-btn.go-offline:hover {
+  background: #fff0f0;
+}
+
+/* ─── Patient hero action ─────────────────────────── */
+
+.patient-hero-action {
+  margin-bottom: 20px;
+}
+
+.hero-action-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 32px;
+  background: linear-gradient(135deg, #0878d1 0%, #0560a8 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px #0878d133;
+  transition: all 0.25s;
+}
+
+.hero-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px #0878d144;
+}
+
+.hero-action-icon {
+  font-size: 48px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hero-action-card h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.hero-action-card p {
+  font-size: 14px;
+  opacity: 0.9;
+  color: white;
+}
+
+/* ─── Patient secondary actions grid ──────────────── */
+
+.patient-secondary-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.secondary-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  background: white;
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.secondary-action:hover:not(.disabled) {
+  border-color: #0878d1;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px #0000000d;
+}
+
+.secondary-action.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-action-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.secondary-action h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #142d4e;
+  margin-bottom: 2px;
+}
+
+.secondary-action p {
+  font-size: 12px;
+  color: #667085;
+}
+
+.dash-section {
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .patient-secondary-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-card {
+    padding: 18px 20px;
+  }
+
+  .availability-value {
+    font-size: 17px;
+  }
+
+  .availability-btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+}
