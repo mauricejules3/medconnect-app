@@ -161,16 +161,7 @@
   line-height: 1.5;
 }
 
-@media (max-width: 768px) {
-  .dash-stats,
-  .dash-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .dash-header h1 {
-    font-size: 24px;
-  }
-}
+/* Account info */
 .dash-account-info {
   margin-top: 40px;
   padding: 24px;
@@ -198,6 +189,7 @@
   color: #0878d1;
   font-size: 12px;
 }
+
 /* Email verification gate */
 .verify-card {
   max-width: 520px;
@@ -285,6 +277,7 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 /* ─── Availability card (driver) ───────────────────── */
 
 .availability-card {
@@ -484,7 +477,196 @@
   margin-top: 30px;
 }
 
+/* ═══════════════════════════════════════════════════════
+   🔔 NOTIFICATION BANNER
+   ═══════════════════════════════════════════════════════ */
+
+.notif-banner {
+  max-width: 900px;
+  margin: 20px auto 0;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #fff8e6 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: notif-slide-down 0.35s ease-out;
+}
+
+@keyframes notif-slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notif-banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.notif-banner-icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.notif-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.notif-banner-text strong {
+  color: #92400e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notif-banner-text span {
+  color: #a16207;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notif-banner-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.notif-banner-enable {
+  background: #0878d1;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.notif-banner-enable:hover:not(:disabled) {
+  background: #0560a8;
+}
+
+.notif-banner-enable:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.notif-banner-dismiss {
+  background: transparent;
+  color: #a16207;
+  border: 1px solid #fcd34d;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.notif-banner-dismiss:hover {
+  background: #fef3c7;
+}
+
+.notif-banner-error {
+  color: #c72c39;
+  font-size: 13px;
+  margin: 0;
+  padding: 8px 12px;
+  background: #fff0f0;
+  border-radius: 8px;
+}
+
+/* Denied state */
+.notif-banner.notif-banner-denied {
+  background: #f5f7fa;
+  border: 1px solid #d5dde6;
+}
+
+.notif-banner-denied .notif-banner-text strong {
+  color: #344054;
+}
+
+.notif-banner-denied .notif-banner-text span {
+  color: #667085;
+}
+
+.notif-banner-help {
+  background: transparent;
+  color: #0878d1;
+  border: 1px solid #cce4f7;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.notif-banner-help:hover {
+  background: #f0f8ff;
+}
+
+.notif-banner-denied .notif-banner-dismiss {
+  color: #667085;
+  border-color: #d5dde6;
+}
+
+.notif-banner-denied .notif-banner-dismiss:hover {
+  background: #eef2f7;
+}
+
+.notif-banner-steps {
+  margin-top: 8px;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8edf3;
+}
+
+.notif-banner-steps p {
+  color: #142d4e;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  margin-top: 12px;
+}
+
+.notif-banner-steps p:first-child {
+  margin-top: 0;
+}
+
+.notif-banner-steps ol {
+  padding-left: 20px;
+  color: #475467;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.notif-banner-steps li {
+  margin-bottom: 2px;
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+
 @media (max-width: 768px) {
+  .dash-stats,
+  .dash-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-header h1 {
+    font-size: 24px;
+  }
+
   .patient-secondary-actions {
     grid-template-columns: 1fr;
   }
@@ -500,5 +682,10 @@
   .availability-btn {
     width: 100%;
     padding: 12px 20px;
+  }
+
+  .notif-banner {
+    margin: 14px 5% 0;
+    padding: 16px;
   }
 }
