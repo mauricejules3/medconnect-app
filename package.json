@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "agora-rtc-react": "^2.5.1",
+    "agora-rtc-sdk-ng": "^4.24.8",
     "firebase": "^12.19.0",
     "groq-sdk": "^1.6.0",
     "leaflet": "^1.9.4",

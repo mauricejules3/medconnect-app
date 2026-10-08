@@ -45,7 +45,7 @@ function BottomNav() {
       {/* Dispatch — shown only to ambulance drivers */}
       {isAmbulance && (
         <NavLink
-          to="/ambulance"
+          to="/dispatcher"
           className={({ isActive }) => `bottom-tab ${isActive ? 'active' : ''}`}
         >
           <span className="bottom-icon">🚨</span>

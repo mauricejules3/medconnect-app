@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession, generateSessionId } from '../hooks/useEmergencySession'
+import { usePatientDispatch } from '../hooks/useDispatch'
+import { useAuth } from '../hooks/useAuth'
 import LiveMap from '../components/LiveMap'
+import CallScreen from '../components/CallScreen'
 import './Emergency.css'
 
 const CONTACTS = [
@@ -15,11 +18,14 @@ const CONTACTS = [
 const DISPATCH_TIMEOUT_SECONDS = 20
 
 function Emergency() {
+  const { user } = useAuth()
+
   const [sharing, setSharing] = useState(false)
   const [sessionId] = useState(() => generateSessionId())
   const [copied, setCopied] = useState(false)
+  const [callActive, setCallActive] = useState(false)
 
-  // Dispatch flow: 'idle' → 'waiting' → 'failed'
+  // Dispatch flow
   const [dispatchStage, setDispatchStage] = useState('idle')
   const [countdown, setCountdown] = useState(DISPATCH_TIMEOUT_SECONDS)
 
@@ -34,7 +40,20 @@ function Emergency() {
     updateUserLocation,
   } = useEmergencySession(sessionId)
 
-  // Push the user's location to Firebase whenever it changes (while sharing)
+  // Broadcast to the dispatch pool + listen for acceptance
+  const {
+    status: poolStatus,
+    assignedAmbulance,
+    startDispatch: broadcastEmergency,
+    cancelDispatch: cancelBroadcast,
+  } = usePatientDispatch(sessionId, {
+    name: user?.name || 'Patient',
+    email: user?.email || '',
+    lat: location?.lat,
+    lng: location?.lng,
+  })
+
+  // Push location to Firebase while sharing
   useEffect(() => {
     if (sharing && location) {
       updateUserLocation(location)
@@ -42,9 +61,10 @@ function Emergency() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sharing, location])
 
-  // Countdown timer for the Lumo dispatch
+  // Countdown → failed after 20s IF nobody accepted
   useEffect(() => {
     if (dispatchStage !== 'waiting') return
+    if (poolStatus === 'accepted') return // don't fail if accepted
 
     if (countdown <= 0) {
       setDispatchStage('failed')
@@ -53,7 +73,7 @@ function Emergency() {
 
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000)
     return () => clearTimeout(timer)
-  }, [dispatchStage, countdown])
+  }, [dispatchStage, countdown, poolStatus])
 
   const toggleSharing = async () => {
     if (sharing) {
@@ -76,21 +96,31 @@ function Emergency() {
     }
   }
 
-  // Start the Lumo dispatch
-  const startDispatch = () => {
+  const startDispatch = async () => {
     setCountdown(DISPATCH_TIMEOUT_SECONDS)
     setDispatchStage('waiting')
-    // Auto-start location sharing so the ambulance can see us
+
     if (!sharing) {
       setSharing(true)
       if (!location) fetchLocation()
     }
+
+    // Broadcast to the pool
+    await broadcastEmergency()
   }
 
-  // Cancel and reset
-  const cancelDispatch = () => {
+  const cancelDispatch = async () => {
     setDispatchStage('idle')
     setCountdown(DISPATCH_TIMEOUT_SECONDS)
+    await cancelBroadcast()
+  }
+
+  const startCall = () => {
+    setCallActive(true)
+    if (!sharing) {
+      setSharing(true)
+      if (!location) fetchLocation()
+    }
   }
 
   return (
@@ -108,8 +138,8 @@ function Emergency() {
       {/* ─── Dispatch block ────────────────────────────── */}
       <section className="emergency-call-block">
 
-        {/* IDLE — show the big button */}
-        {dispatchStage === 'idle' && (
+        {/* IDLE */}
+        {dispatchStage === 'idle' && poolStatus !== 'accepted' && (
           <>
             <button
               className="emergency-primary-btn"
@@ -129,13 +159,14 @@ function Emergency() {
           </>
         )}
 
-        {/* WAITING — countdown */}
-        {dispatchStage === 'waiting' && (
+        {/* WAITING — pool pending, nobody accepted yet */}
+        {dispatchStage === 'waiting' && poolStatus !== 'accepted' && (
           <div className="dispatch-card waiting">
             <div className="dispatch-spinner"></div>
-            <h2>Finding the nearest Lumo ambulance...</h2>
+            <h2>Notifying ambulances near you…</h2>
             <p className="dispatch-sub">
-              We're notifying ambulances near you. Please stay on this screen.
+              All available Lumo ambulances have been alerted. First to accept
+              will respond.
             </p>
 
             <div className="dispatch-countdown">
@@ -145,7 +176,7 @@ function Emergency() {
 
             <p className="dispatch-hint-small">
               If no ambulance responds within {DISPATCH_TIMEOUT_SECONDS} seconds,
-              we'll automatically offer to call 112.
+              we'll offer to call 112.
             </p>
 
             <button className="dispatch-cancel-btn" onClick={cancelDispatch}>
@@ -154,8 +185,38 @@ function Emergency() {
           </div>
         )}
 
-        {/* FAILED — no ambulance responded */}
-        {dispatchStage === 'failed' && (
+        {/* ACCEPTED — an ambulance took the emergency */}
+        {poolStatus === 'accepted' && assignedAmbulance && (
+          <div className="dispatch-card accepted">
+            <div className="dispatch-accepted-icon">✅</div>
+            <h2>Ambulance accepted!</h2>
+            <p className="dispatch-sub">
+              <strong>{assignedAmbulance.name}</strong> is responding to your
+              emergency and is on the way.
+            </p>
+
+            <button
+              className="call-ambulance-btn"
+              onClick={startCall}
+            >
+              <span className="call-ambulance-icon">📞</span>
+              <span className="call-ambulance-text">
+                <strong>Call the ambulance</strong>
+                <small>Talk to the driver directly</small>
+              </span>
+            </button>
+
+            <button
+              className="dispatch-cancel-btn"
+              onClick={cancelDispatch}
+            >
+              Cancel emergency
+            </button>
+          </div>
+        )}
+
+        {/* FAILED — nobody accepted in time */}
+        {dispatchStage === 'failed' && poolStatus !== 'accepted' && (
           <div className="dispatch-card failed">
             <div className="dispatch-failed-icon">❌</div>
             <h2>No Lumo ambulance responded</h2>
@@ -298,6 +359,17 @@ function Emergency() {
           ))}
         </div>
       </section>
+
+      {/* ─── Call screen overlay ───────────────────────── */}
+      {callActive && (
+        <CallScreen
+          sessionId={sessionId}
+          role="patient"
+          autoStart={true}
+          onClose={() => setCallActive(false)}
+          remoteName={assignedAmbulance?.name || 'Ambulance'}
+        />
+      )}
 
     </main>
   )

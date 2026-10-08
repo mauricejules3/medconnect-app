@@ -4,7 +4,10 @@ import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { role, logout } = useAuth()
+
+  const isPatient = role === 'patient' || !role
+  const isAmbulance = role === 'ambulance'
 
   const handleLogout = async () => {
     await logout()
@@ -19,10 +22,20 @@ function Navbar() {
       </Link>
 
       <nav>
-        <Link to="/">Home</Link>
-        <Link to="/assistant">AI Assistant</Link>
-        <Link to="/emergency">Emergency</Link>
-        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/dashboard">Home</Link>
+
+        {isPatient && (
+          <>
+            <Link to="/emergency">Emergency</Link>
+            <Link to="/assistant">AI Assistant</Link>
+          </>
+        )}
+
+        {isAmbulance && (
+          <Link to="/dispatcher">Dispatch</Link>
+        )}
+
+        <Link to="/profile">Profile</Link>
       </nav>
 
       <button onClick={handleLogout} className="login-btn">

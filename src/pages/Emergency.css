@@ -559,3 +559,88 @@
     font-size: 26px;
   }
 }
+/* ═══════════════════════════════════════════════════════
+   📞 Call Ambulance button
+   ═══════════════════════════════════════════════════════ */
+
+.call-ambulance-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 24px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #16834a 0%, #116b3c 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-shadow: 0 12px 30px #16834a33;
+}
+
+.call-ambulance-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px #16834a44;
+}
+
+.call-ambulance-btn:active {
+  transform: translateY(0);
+}
+
+.call-ambulance-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.call-ambulance-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.call-ambulance-text strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.call-ambulance-text small {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+/* ═══════════════════════════════════════════════════════
+   Accepted dispatch card
+   ═══════════════════════════════════════════════════════ */
+
+.dispatch-card.accepted {
+  background: linear-gradient(135deg, #e9f9ef 0%, #d1f0dd 100%);
+  border: 1px solid #b8e6c8;
+}
+
+.dispatch-accepted-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  animation: dispatch-accepted-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dispatch-accepted-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+.dispatch-card.accepted h2 {
+  color: #16834a;
+}
+
+.dispatch-card.accepted .dispatch-sub {
+  color: #475467;
+}
+
+.dispatch-card.accepted .dispatch-sub strong {
+  color: #142d4e;
+}

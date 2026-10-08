@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ref, onValue, set, remove } from 'firebase/database'
+import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
 import LiveMap from '../components/LiveMap'
+import CallScreen from '../components/CallScreen'
 import './Ambulance.css'
 
 function Ambulance() {
@@ -14,7 +17,12 @@ function Ambulance() {
   const [joinError, setJoinError] = useState('')
   const [sharing, setSharing] = useState(false)
 
-  // If URL changes (e.g., from a deep link), sync the session ID
+  // Call state
+  const [callActive, setCallActive] = useState(false)
+  const [incomingCall, setIncomingCall] = useState(false)
+  const [callFrom, setCallFrom] = useState(null)
+
+  // Sync URL session ID
   useEffect(() => {
     if (urlSessionId) {
       setSessionId(urlSessionId)
@@ -40,6 +48,29 @@ function Ambulance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sharing, location, sessionId])
 
+  // ─── Listen for incoming calls (from patient) ─────
+  useEffect(() => {
+    if (!sessionId) return
+
+    const callRef = ref(db, `emergencies/${sessionId}/call`)
+    const unsubscribe = onValue(callRef, (snapshot) => {
+      const data = snapshot.val()
+
+      if (data?.active && data?.from === 'patient' && !callActive) {
+        setIncomingCall(true)
+        setCallFrom('patient')
+      }
+
+      // If caller hung up, clear incoming state
+      if (!data?.active && !callActive) {
+        setIncomingCall(false)
+        setCallFrom(null)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [sessionId, callActive])
+
   const handleJoin = (e) => {
     e.preventDefault()
     const trimmed = inputId.trim().toUpperCase()
@@ -58,7 +89,15 @@ function Ambulance() {
     navigate(`/ambulance/${trimmed}`)
   }
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
+    // Clean up any active call
+    if (sessionId) {
+      try {
+        await remove(ref(db, `emergencies/${sessionId}/call`))
+      } catch (err) {
+        // ignore
+      }
+    }
     setSharing(false)
     setSessionId('')
     setInputId('')
@@ -81,7 +120,53 @@ function Ambulance() {
     window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lng}`, '_blank')
   }
 
-  // ─── NO SESSION — Show join screen ──────────────────
+  // ─── Call ambulance → patient ──────────────────────
+  const startCallToPatient = async () => {
+    if (!sessionId) return
+    try {
+      // Signal via Firebase
+      await set(ref(db, `emergencies/${sessionId}/call`), {
+        active: true,
+        from: 'ambulance',
+        startedAt: Date.now(),
+      })
+    } catch (err) {
+      console.error('Failed to signal call:', err)
+    }
+    setCallActive(true)
+  }
+
+  // ─── Accept incoming call ───────────────────────────
+  const acceptIncomingCall = () => {
+    setIncomingCall(false)
+    setCallActive(true)
+  }
+
+  // ─── Decline incoming call ──────────────────────────
+  const declineIncomingCall = async () => {
+    if (!sessionId) return
+    try {
+      await remove(ref(db, `emergencies/${sessionId}/call`))
+    } catch (err) {
+      // ignore
+    }
+    setIncomingCall(false)
+    setCallFrom(null)
+  }
+
+  // ─── End call (cleanup Firebase signal) ─────────────
+  const handleCallEnd = async () => {
+    if (sessionId) {
+      try {
+        await remove(ref(db, `emergencies/${sessionId}/call`))
+      } catch (err) {
+        // ignore
+      }
+    }
+    setCallActive(false)
+  }
+
+  // ─── NO SESSION — Join screen ───────────────────────
   if (!sessionId) {
     return (
       <main className="ambulance-page">
@@ -154,6 +239,18 @@ function Ambulance() {
           {sharing ? '🟢 Broadcasting — Tap to stop' : 'Start broadcasting my location'}
         </button>
       </div>
+
+      {/* ─── Call Patient button ──────────────────── */}
+      <button
+        className="call-ambulance-btn"
+        onClick={startCallToPatient}
+      >
+        <span className="call-ambulance-icon">📞</span>
+        <span className="call-ambulance-text">
+          <strong>Call Patient</strong>
+          <small>Start a voice call with the patient</small>
+        </span>
+      </button>
 
       {/* Patient location */}
       <section className="dispatch-card patient-card">
@@ -240,6 +337,30 @@ function Ambulance() {
           ambulanceLocation={location}
         />
       </section>
+
+      {/* ─── Incoming call screen (patient calls us) ─── */}
+      {incomingCall && !callActive && (
+        <CallScreen
+          sessionId={sessionId}
+          role="ambulance"
+          incomingCall={true}
+          autoStart={false}
+          onClose={declineIncomingCall}
+          remoteName="Patient"
+        />
+      )}
+
+      {/* ─── Active call (both sides) ──────────────── */}
+      {callActive && (
+        <CallScreen
+          sessionId={sessionId}
+          role="ambulance"
+          autoStart={true}
+          onClose={handleCallEnd}
+          remoteName="Patient"
+        />
+      )}
+
     </main>
   )
 }

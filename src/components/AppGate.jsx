@@ -13,6 +13,7 @@ import Medical from '../pages/Medical'
 import AIAssistant from '../pages/AIAssistant'
 import Emergency from '../pages/Emergency'
 import Ambulance from '../pages/Ambulance'
+import Dispatcher from '../pages/Dispatcher'
 import FirebaseTest from '../pages/FirebaseTest'
 import Login from '../pages/Login'
 import Signup from '../pages/Signup'
@@ -67,6 +68,7 @@ function AppGate() {
         <Route path="/emergency" element={<Emergency />} />
         <Route path="/ambulance" element={<Ambulance />} />
         <Route path="/ambulance/:sessionId" element={<Ambulance />} />
+        <Route path="/dispatcher" element={<Dispatcher />} />
         <Route path="/firebase-test" element={<FirebaseTest />} />
         <Route path="/welcome" element={<Home />} />
         {/* Fallback → dashboard */}

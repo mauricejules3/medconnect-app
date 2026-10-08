@@ -378,7 +378,7 @@ function DriverDashboard({ user, available, onToggle }) {
       <h2 className="dash-section-title">Quick action</h2>
 
       <div className="dash-actions">
-        <Link to="/ambulance" className="action-card">
+        <Link to="/dispatcher" className="action-card">
           <div className="action-icon red">🚨</div>
           <div>
             <h3>Open Dispatcher</h3>

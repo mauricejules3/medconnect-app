@@ -297,3 +297,56 @@
   background: #fff0f0;
   border-color: #c72c39;
 }
+/* ═══════════════════════════════════════════════════════
+   📞 Call Patient button (ambulance)
+   ═══════════════════════════════════════════════════════ */
+
+.call-ambulance-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, #16834a 0%, #116b3c 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-shadow: 0 12px 30px #16834a33;
+}
+
+.call-ambulance-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px #16834a44;
+}
+
+.call-ambulance-btn:active {
+  transform: translateY(0);
+}
+
+.call-ambulance-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.call-ambulance-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.call-ambulance-text strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.call-ambulance-text small {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
