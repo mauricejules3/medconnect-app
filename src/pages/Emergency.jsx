@@ -6,6 +6,7 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession, generateSessionId } from '../hooks/useEmergencySession'
 import { usePatientDispatch } from '../hooks/useDispatch'
 import { useAuth } from '../hooks/useAuth'
+import { useRingSound } from '../hooks/useRingSound'
 import LiveMap from '../components/LiveMap'
 import CallScreen from '../components/CallScreen'
 import './Emergency.css'
@@ -27,12 +28,19 @@ function Emergency() {
   const [copied, setCopied] = useState(false)
 
   // Call states
-  const [callActive, setCallActive] = useState(false)   // CallScreen visible
-  const [callRinging, setCallRinging] = useState(false) // Waiting for ambulance to accept
+  const [callActive, setCallActive] = useState(false)
+  const [callRinging, setCallRinging] = useState(false)
 
   // Dispatch flow
   const [dispatchStage, setDispatchStage] = useState('idle')
   const [countdown, setCountdown] = useState(DISPATCH_TIMEOUT_SECONDS)
+
+  // 🔊 Ringback sound — plays while waiting for the ambulance to answer
+  useRingSound({
+    src: '/sounds/ringback.mp3',
+    playing: callActive && callRinging,
+    volume: 0.5,
+  })
 
   const { location, error, fetchLocation } = useGeolocation({
     watch: sharing,
@@ -151,7 +159,6 @@ function Emergency() {
       if (!location) fetchLocation()
     }
 
-    // Write the initial signal — status 'ringing'
     try {
       await set(ref(db, `emergencies/${sessionId}/call`), {
         active: true,

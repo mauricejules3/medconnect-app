@@ -4,6 +4,7 @@ import { ref, onValue, set, remove, update } from 'firebase/database'
 import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
+import { useRingSound } from '../hooks/useRingSound'
 import LiveMap from '../components/LiveMap'
 import CallScreen from '../components/CallScreen'
 import './Ambulance.css'
@@ -20,6 +21,14 @@ function Ambulance() {
   // Call state
   const [callActive, setCallActive] = useState(false)
   const [incomingCall, setIncomingCall] = useState(false)
+
+  // 🔊 Ringtone — plays when an incoming call arrives
+  useRingSound({
+    src: '/sounds/ringtone.mp3',
+    playing: incomingCall && !callActive,
+    volume: 1.0,
+    vibrate: true,
+  })
 
   // Sync URL session ID
   useEffect(() => {
@@ -134,7 +143,7 @@ function Ambulance() {
       await set(ref(db, `emergencies/${sessionId}/call`), {
         active: true,
         from: 'ambulance',
-        status: 'accepted', // Ambulance initiated → already accepted
+        status: 'accepted',
         startedAt: Date.now(),
       })
     } catch (err) {
@@ -147,7 +156,6 @@ function Ambulance() {
   const acceptIncomingCall = async () => {
     if (!sessionId) return
 
-    // 1) Update Firebase: tell the patient we accepted
     try {
       await update(ref(db, `emergencies/${sessionId}/call`), {
         status: 'accepted',
@@ -157,7 +165,6 @@ function Ambulance() {
       console.error('Failed to update call status:', err)
     }
 
-    // 2) Switch local state to active call — CallScreen joins Agora
     setIncomingCall(false)
     setCallActive(true)
   }
