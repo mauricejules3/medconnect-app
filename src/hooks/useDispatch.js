@@ -54,12 +54,25 @@ export function usePatientDispatch(sessionId, patientInfo) {
     if (!sessionId) return
     try {
       setError('')
+
+      // Sanitize patient info — Firebase rejects undefined values
+      const cleanPatient = {
+        name: patientInfo?.name || 'Patient',
+        email: patientInfo?.email || '',
+      }
+      if (typeof patientInfo?.lat === 'number') {
+        cleanPatient.lat = patientInfo.lat
+      }
+      if (typeof patientInfo?.lng === 'number') {
+        cleanPatient.lng = patientInfo.lng
+      }
+
       await set(ref(db, `emergencies/${sessionId}/dispatch`), {
         status: 'pending',
         acceptedBy: null,
         acceptedAt: null,
         createdAt: serverTimestamp(),
-        patient: patientInfo || {},
+        patient: cleanPatient,
       })
       setStatus('pending')
     } catch (err) {
