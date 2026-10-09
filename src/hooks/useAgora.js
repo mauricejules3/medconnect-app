@@ -25,7 +25,11 @@ export function useAgora() {
     try {
       setError('')
 
-      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
+      const client = AgoraRTC.createClient({
+        mode: 'rtc',
+        codec: 'vp8',
+        role: 'host',
+      })
       clientRef.current = client
 
       // Listen for remote users
@@ -50,8 +54,10 @@ export function useAgora() {
         setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid))
       })
 
-      // Join the channel
-      await client.join(APP_ID, channelName, null, null)
+      // Join the channel — null token (Testing mode), 0 = auto-assign UID
+      console.log('[Agora] Attempting to join channel:', channelName, 'with App ID:', APP_ID.slice(0, 8) + '...')
+      await client.join(APP_ID, channelName, null, 0)
+      console.log('[Agora] Joined channel successfully')
 
       // Create and publish local tracks
       const audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
@@ -67,10 +73,13 @@ export function useAgora() {
       }
 
       await client.publish(tracks)
+      console.log('[Agora] Published local tracks')
       setJoined(true)
     } catch (err) {
-      console.error('[Agora] Join failed:', err)
-      setError('Failed to join the call. Please try again.')
+      console.error('[Agora] Join failed — full error:', err)
+      console.error('[Agora] Error code:', err.code)
+      console.error('[Agora] Error message:', err.message)
+      setError(`Failed to join the call: ${err.message || err.code || 'Unknown error'}`)
     }
   }, [joined])
 
