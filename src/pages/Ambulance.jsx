@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ref, onValue, set, remove } from 'firebase/database'
+import { ref, onValue, set, remove, update } from 'firebase/database'
 import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession } from '../hooks/useEmergencySession'
@@ -20,7 +20,6 @@ function Ambulance() {
   // Call state
   const [callActive, setCallActive] = useState(false)
   const [incomingCall, setIncomingCall] = useState(false)
-  const [callFrom, setCallFrom] = useState(null)
 
   // Sync URL session ID
   useEffect(() => {
@@ -56,25 +55,29 @@ function Ambulance() {
     const unsubscribe = onValue(callRef, (snapshot) => {
       const data = snapshot.val()
 
-      // New incoming call from patient
-      if (data?.active && data?.from === 'patient' && !callActive) {
+      // New incoming call from patient (status: 'ringing')
+      if (
+        data?.active &&
+        data?.from === 'patient' &&
+        data?.status === 'ringing' &&
+        !callActive &&
+        !incomingCall
+      ) {
         setIncomingCall(true)
-        setCallFrom('patient')
       }
 
-      // Signal was removed or became inactive — the other side ended it
+      // Signal was removed → other side ended it
       if (!data || !data.active) {
         if (callActive) {
-          console.log('[Call] Patient ended the call — ending our side')
+          console.log('[Call] Patient ended the call')
           setCallActive(false)
         }
         setIncomingCall(false)
-        setCallFrom(null)
       }
     })
 
     return () => unsubscribe()
-  }, [sessionId, callActive])
+  }, [sessionId, callActive, incomingCall])
 
   const handleJoin = (e) => {
     e.preventDefault()
@@ -124,13 +127,14 @@ function Ambulance() {
     window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lng}`, '_blank')
   }
 
-  // ─── Call patient (ambulance initiates) ─────────────
+  // ─── Call patient (ambulance initiates) ─────
   const startCallToPatient = async () => {
     if (!sessionId) return
     try {
       await set(ref(db, `emergencies/${sessionId}/call`), {
         active: true,
         from: 'ambulance',
+        status: 'accepted', // Ambulance initiated → already accepted
         startedAt: Date.now(),
       })
     } catch (err) {
@@ -139,13 +143,26 @@ function Ambulance() {
     setCallActive(true)
   }
 
-  // ─── Accept incoming call ───────────────────────────
-  const acceptIncomingCall = () => {
+  // ─── Accept incoming call from patient ─────
+  const acceptIncomingCall = async () => {
+    if (!sessionId) return
+
+    // 1) Update Firebase: tell the patient we accepted
+    try {
+      await update(ref(db, `emergencies/${sessionId}/call`), {
+        status: 'accepted',
+        acceptedAt: Date.now(),
+      })
+    } catch (err) {
+      console.error('Failed to update call status:', err)
+    }
+
+    // 2) Switch local state to active call — CallScreen joins Agora
     setIncomingCall(false)
     setCallActive(true)
   }
 
-  // ─── Decline incoming call ──────────────────────────
+  // ─── Decline incoming call ─────
   const declineIncomingCall = async () => {
     if (!sessionId) return
     try {
@@ -154,10 +171,9 @@ function Ambulance() {
       // ignore
     }
     setIncomingCall(false)
-    setCallFrom(null)
   }
 
-  // ─── End call (cleanup Firebase signal) ─────────────
+  // ─── End call ─────
   const handleCallEnd = async () => {
     if (sessionId) {
       try {
@@ -169,7 +185,7 @@ function Ambulance() {
     setCallActive(false)
   }
 
-  // ─── NO SESSION — Join screen ───────────────────────
+  // ─── NO SESSION — Join screen ─────
   if (!sessionId) {
     return (
       <main className="ambulance-page">
@@ -214,7 +230,7 @@ function Ambulance() {
     )
   }
 
-  // ─── JOINED — Dispatcher view ───────────────────────
+  // ─── JOINED — Dispatcher view ─────
   return (
     <main className="ambulance-page">
       <div className="ambulance-header">
@@ -243,7 +259,6 @@ function Ambulance() {
         </button>
       </div>
 
-      {/* ─── Call Patient button ──────────────────── */}
       <button
         className="call-ambulance-btn"
         onClick={startCallToPatient}
@@ -255,7 +270,6 @@ function Ambulance() {
         </span>
       </button>
 
-      {/* Patient location */}
       <section className="dispatch-card patient-card">
         <div className="card-head">
           <h2>📍 Patient Location</h2>
@@ -291,7 +305,6 @@ function Ambulance() {
         )}
       </section>
 
-      {/* My location */}
       <section className="dispatch-card my-card">
         <div className="card-head">
           <h2>🚑 My Location</h2>
@@ -329,7 +342,6 @@ function Ambulance() {
         {error && <p className="location-error">{error}</p>}
       </section>
 
-      {/* Live map */}
       <section className="ambulance-map-section">
         <h2>Live map</h2>
         <p className="map-subtitle">
@@ -341,7 +353,7 @@ function Ambulance() {
         />
       </section>
 
-      {/* ─── Incoming call screen ─── */}
+      {/* Incoming call screen */}
       {incomingCall && !callActive && (
         <CallScreen
           sessionId={sessionId}
@@ -349,11 +361,12 @@ function Ambulance() {
           incomingCall={true}
           autoStart={false}
           onClose={declineIncomingCall}
+          onAccept={acceptIncomingCall}
           remoteName="Patient"
         />
       )}
 
-      {/* ─── Active call ──────────────── */}
+      {/* Active call */}
       {callActive && (
         <CallScreen
           sessionId={sessionId}

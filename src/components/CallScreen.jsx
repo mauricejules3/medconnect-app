@@ -7,7 +7,9 @@ function CallScreen({
   role,
   autoStart = false,
   incomingCall = false,
+  ringing = false,
   onClose,
+  onAccept,
   remoteName = 'Caller',
 }) {
   const {
@@ -27,13 +29,23 @@ function CallScreen({
   const localVideoRef = useRef(null)
   const [seconds, setSeconds] = useState(0)
 
-  // Auto-join when requested
+  // Auto-join when not ringing and autoStart is true
   useEffect(() => {
+    // Don't join while ringing — wait for the parent to switch ringing off
+    if (ringing) return
     if (autoStart && !joined) {
       join(sessionId, false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoStart])
+  }, [autoStart, ringing])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      leave()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Attach local video track
   useEffect(() => {
@@ -60,10 +72,7 @@ function CallScreen({
 
   const isAmbulance = role === 'ambulance'
 
-  // Does the other side have video?
   const remoteHasVideo = remoteUsers.some((u) => u.videoTrack)
-
-  // Show video view if either side has video
   const showVideoView = cameraOn || remoteHasVideo
 
   const handleEnd = async () => {
@@ -71,11 +80,7 @@ function CallScreen({
     onClose?.()
   }
 
-  const handleAccept = async () => {
-    await join(sessionId, false)
-  }
-
-  // ─── Incoming call screen ────────────────────────────
+  // ─── Incoming call screen (for the receiving side) ───
   if (incomingCall && !joined) {
     return (
       <div className="call-overlay">
@@ -92,11 +97,46 @@ function CallScreen({
               <span className="call-btn-label">Decline</span>
             </button>
 
-            <button className="call-accept-btn" onClick={handleAccept}>
+            <button
+              className="call-accept-btn"
+              onClick={onAccept}
+            >
               <span className="call-btn-icon">📞</span>
               <span className="call-btn-label">Accept</span>
             </button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Ringing screen (caller waiting for answer) ─────
+  if (ringing) {
+    return (
+      <div className="call-overlay">
+        <div className="call-screen">
+          <div className="call-ringing-area">
+            <div className="call-ringing-avatar">
+              <span className="call-ringing-icon">🚑</span>
+              <div className="call-ringing-pulse"></div>
+            </div>
+            <h2 className="call-ringing-name">Calling {remoteName}…</h2>
+            <p className="call-ringing-status">Ringing…</p>
+          </div>
+
+          <div className="call-controls">
+            <button
+              className="call-control-btn end"
+              onClick={handleEnd}
+              title="Cancel call"
+            >
+              ❌
+            </button>
+          </div>
+
+          <p className="call-hint">
+            Waiting for {remoteName} to answer…
+          </p>
         </div>
       </div>
     )

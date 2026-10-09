@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ref, onValue, remove } from 'firebase/database'
+import { ref, onValue, set, remove } from 'firebase/database'
 import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession, generateSessionId } from '../hooks/useEmergencySession'
@@ -25,7 +25,10 @@ function Emergency() {
   const [sharing, setSharing] = useState(false)
   const [sessionId] = useState(() => generateSessionId())
   const [copied, setCopied] = useState(false)
-  const [callActive, setCallActive] = useState(false)
+
+  // Call states
+  const [callActive, setCallActive] = useState(false)   // CallScreen visible
+  const [callRinging, setCallRinging] = useState(false) // Waiting for ambulance to accept
 
   // Dispatch flow
   const [dispatchStage, setDispatchStage] = useState('idle')
@@ -42,7 +45,6 @@ function Emergency() {
     updateUserLocation,
   } = useEmergencySession(sessionId)
 
-  // Broadcast to the dispatch pool + listen for acceptance
   const {
     status: poolStatus,
     assignedAmbulance,
@@ -77,22 +79,31 @@ function Emergency() {
     return () => clearTimeout(timer)
   }, [dispatchStage, countdown, poolStatus])
 
-  // ─── Watch Firebase call signal — end our call if the ambulance ends it ───
+  // ─── Listen to Firebase call signal ───
   useEffect(() => {
     if (!callActive || !sessionId) return
 
     const callRef = ref(db, `emergencies/${sessionId}/call`)
     const unsubscribe = onValue(callRef, (snapshot) => {
       const data = snapshot.val()
-      // If signal removed or inactive → other side ended the call
+
+      // If signal removed → other side ended the call
       if (!data || !data.active) {
-        console.log('[Call] Ambulance ended the call — ending our side')
+        console.log('[Call] Ambulance ended the call')
         setCallActive(false)
+        setCallRinging(false)
+        return
+      }
+
+      // If ambulance accepted → stop ringing, join Agora
+      if (data.status === 'accepted' && callRinging) {
+        console.log('[Call] Ambulance accepted — joining Agora')
+        setCallRinging(false)
       }
     })
 
     return () => unsubscribe()
-  }, [callActive, sessionId])
+  }, [callActive, callRinging, sessionId])
 
   const toggleSharing = async () => {
     if (sharing) {
@@ -133,23 +144,38 @@ function Emergency() {
     await cancelBroadcast()
   }
 
-  const startCall = () => {
-    setCallActive(true)
+  // ─── Start a call to the ambulance ───
+  const startCall = async () => {
     if (!sharing) {
       setSharing(true)
       if (!location) fetchLocation()
     }
+
+    // Write the initial signal — status 'ringing'
+    try {
+      await set(ref(db, `emergencies/${sessionId}/call`), {
+        active: true,
+        from: 'patient',
+        status: 'ringing',
+        startedAt: Date.now(),
+      })
+    } catch (err) {
+      console.error('Failed to signal call:', err)
+    }
+
+    setCallRinging(true)
+    setCallActive(true)
   }
 
-  // ─── Called when the patient ends the call ───
+  // ─── End the call ───
   const handleCallEnd = async () => {
-    // Delete the Firebase signal so the ambulance's call ends too
     try {
       await remove(ref(db, `emergencies/${sessionId}/call`))
     } catch (err) {
       console.error('Failed to end call:', err)
     }
     setCallActive(false)
+    setCallRinging(false)
   }
 
   return (
@@ -164,7 +190,6 @@ function Emergency() {
         </p>
       </div>
 
-      {/* ─── Dispatch block ────────────────────────────── */}
       <section className="emergency-call-block">
 
         {dispatchStage === 'idle' && poolStatus !== 'accepted' && (
@@ -269,7 +294,6 @@ function Emergency() {
 
       </section>
 
-      {/* Live sharing panel */}
       <section className="emergency-location">
         <div className="location-head">
           <div>
@@ -381,12 +405,13 @@ function Emergency() {
         </div>
       </section>
 
-      {/* ─── Call screen overlay ───────────────────────── */}
+      {/* ─── Call screen overlay ─── */}
       {callActive && (
         <CallScreen
           sessionId={sessionId}
           role="patient"
-          autoStart={true}
+          ringing={callRinging}
+          autoStart={!callRinging}
           onClose={handleCallEnd}
           remoteName={assignedAmbulance?.name || 'Ambulance'}
         />
