@@ -60,6 +60,12 @@ function CallScreen({
 
   const isAmbulance = role === 'ambulance'
 
+  // Does the other side have video?
+  const remoteHasVideo = remoteUsers.some((u) => u.videoTrack)
+
+  // Show video view if either side has video
+  const showVideoView = cameraOn || remoteHasVideo
+
   const handleEnd = async () => {
     await leave()
     onClose?.()
@@ -101,25 +107,37 @@ function CallScreen({
     <div className="call-overlay">
       <div className="call-screen">
 
-        {cameraOn && (
+        {showVideoView && (
           <div className="call-video-area">
-            {remoteUsers.map((user) =>
-              user.videoTrack ? (
+            {remoteUsers.map((user) => {
+              if (!user.videoTrack) return null
+              return (
                 <div key={user.uid} className="call-video-remote">
                   <RemoteVideo track={user.videoTrack} />
                   <span className="call-video-label">{remoteName}</span>
                 </div>
-              ) : null
+              )
+            })}
+
+            {cameraOn && (
+              <div className="call-video-local">
+                <div ref={localVideoRef} className="call-local-video-el" />
+                <span className="call-video-label">You</span>
+              </div>
             )}
 
-            <div className="call-video-local">
-              <div ref={localVideoRef} className="call-local-video-el" />
-              <span className="call-video-label">You</span>
-            </div>
+            {!remoteHasVideo && cameraOn && (
+              <div className="call-video-remote call-video-waiting">
+                <div className="call-video-waiting-inner">
+                  <div className="call-video-waiting-icon">📹</div>
+                  <p>Waiting for {remoteName}'s video…</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {!cameraOn && (
+        {!showVideoView && (
           <div className="call-audio-area">
             <div className="call-audio-avatar">
               {isAmbulance ? '👤' : '🚑'}
@@ -172,7 +190,7 @@ function CallScreen({
           </button>
         </div>
 
-        {isAmbulance && !cameraOn && joined && (
+        {isAmbulance && !cameraOn && !remoteHasVideo && joined && (
           <p className="call-hint">
             Tap <strong>📷</strong> to switch to video if you need to see the
             patient.
