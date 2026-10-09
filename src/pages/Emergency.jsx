@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ref, onValue, set, remove } from 'firebase/database'
+import { ref, onValue, set, remove, update } from 'firebase/database'
 import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession, generateSessionId } from '../hooks/useEmergencySession'
@@ -30,6 +30,8 @@ function Emergency() {
   // Call states
   const [callActive, setCallActive] = useState(false)
   const [callRinging, setCallRinging] = useState(false)
+  const [videoRequested, setVideoRequested] = useState(false)
+  const [videoRequestStatus, setVideoRequestStatus] = useState(null)
 
   // Dispatch flow
   const [dispatchStage, setDispatchStage] = useState('idle')
@@ -100,6 +102,8 @@ function Emergency() {
         console.log('[Call] Ambulance ended the call')
         setCallActive(false)
         setCallRinging(false)
+        setVideoRequested(false)
+        setVideoRequestStatus(null)
         return
       }
 
@@ -107,6 +111,15 @@ function Emergency() {
       if (data.status === 'accepted' && callRinging) {
         console.log('[Call] Ambulance accepted — joining Agora')
         setCallRinging(false)
+      }
+
+      // Watch the ambulance's video request
+      if (data.videoRequest === true) {
+        setVideoRequested(true)
+        setVideoRequestStatus(data.videoResponse || 'pending')
+      } else {
+        setVideoRequested(false)
+        setVideoRequestStatus(null)
       }
     })
 
@@ -174,6 +187,19 @@ function Emergency() {
     setCallActive(true)
   }
 
+  // ─── Respond to the ambulance's video request ───
+  const respondToVideoRequest = async (accepted) => {
+    if (!sessionId) return
+    try {
+      await update(ref(db, `emergencies/${sessionId}/call`), {
+        videoResponse: accepted ? 'accepted' : 'declined',
+      })
+      setVideoRequestStatus(accepted ? 'accepted' : 'declined')
+    } catch (err) {
+      console.error('Failed to respond to video request:', err)
+    }
+  }
+
   // ─── End the call ───
   const handleCallEnd = async () => {
     try {
@@ -183,6 +209,8 @@ function Emergency() {
     }
     setCallActive(false)
     setCallRinging(false)
+    setVideoRequested(false)
+    setVideoRequestStatus(null)
   }
 
   return (
@@ -419,7 +447,10 @@ function Emergency() {
           role="patient"
           ringing={callRinging}
           autoStart={!callRinging}
+          videoRequested={videoRequested}
+          videoRequestStatus={videoRequestStatus}
           onClose={handleCallEnd}
+          onRespondToVideoRequest={respondToVideoRequest}
           remoteName={assignedAmbulance?.name || 'Ambulance'}
         />
       )}

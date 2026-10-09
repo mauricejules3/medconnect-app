@@ -21,6 +21,8 @@ function Ambulance() {
   // Call state
   const [callActive, setCallActive] = useState(false)
   const [incomingCall, setIncomingCall] = useState(false)
+  const [videoRequested, setVideoRequested] = useState(false)
+  const [videoRequestStatus, setVideoRequestStatus] = useState(null)
 
   // 🔊 Ringtone — plays when an incoming call arrives
   useRingSound({
@@ -82,6 +84,18 @@ function Ambulance() {
           setCallActive(false)
         }
         setIncomingCall(false)
+        setVideoRequested(false)
+        setVideoRequestStatus(null)
+        return
+      }
+
+      // Watch our video request state
+      if (data.videoRequest === true) {
+        setVideoRequested(true)
+        setVideoRequestStatus(data.videoResponse || 'pending')
+      } else {
+        setVideoRequested(false)
+        setVideoRequestStatus(null)
       }
     })
 
@@ -180,6 +194,23 @@ function Ambulance() {
     setIncomingCall(false)
   }
 
+  // ─── Request patient's video ─────
+  const requestPatientVideo = async () => {
+    if (!sessionId) return
+    if (videoRequested && videoRequestStatus === 'pending') return
+
+    try {
+      await update(ref(db, `emergencies/${sessionId}/call`), {
+        videoRequest: true,
+        videoResponse: 'pending',
+      })
+      setVideoRequested(true)
+      setVideoRequestStatus('pending')
+    } catch (err) {
+      console.error('Failed to request video:', err)
+    }
+  }
+
   // ─── End call ─────
   const handleCallEnd = async () => {
     if (sessionId) {
@@ -190,6 +221,8 @@ function Ambulance() {
       }
     }
     setCallActive(false)
+    setVideoRequested(false)
+    setVideoRequestStatus(null)
   }
 
   // ─── NO SESSION — Join screen ─────
@@ -379,7 +412,10 @@ function Ambulance() {
           sessionId={sessionId}
           role="ambulance"
           autoStart={true}
+          videoRequested={videoRequested}
+          videoRequestStatus={videoRequestStatus}
           onClose={handleCallEnd}
+          onRequestVideo={requestPatientVideo}
           remoteName="Patient"
         />
       )}
