@@ -54,9 +54,24 @@ export function useAgora() {
         setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid))
       })
 
-      // Join the channel — null token (Testing mode), 0 = auto-assign UID
-      console.log('[Agora] Attempting to join channel:', channelName, 'with App ID:', APP_ID.slice(0, 8) + '...')
-      await client.join(APP_ID, channelName, null, 0)
+      // ─── Fetch an Agora token from our serverless function ───
+      console.log('[Agora] Fetching token for channel:', channelName)
+      const tokenRes = await fetch(
+        `/api/agora-token?channel=${encodeURIComponent(channelName)}&uid=0`
+      )
+
+      if (!tokenRes.ok) {
+        const errData = await tokenRes.json().catch(() => ({}))
+        throw new Error(
+          `Token server error: ${errData.error || tokenRes.status}`
+        )
+      }
+
+      const { token } = await tokenRes.json()
+      console.log('[Agora] Got token, joining channel')
+
+      // ─── Join with the token ───────────────────────────────
+      await client.join(APP_ID, channelName, token, 0)
       console.log('[Agora] Joined channel successfully')
 
       // Create and publish local tracks
@@ -79,7 +94,9 @@ export function useAgora() {
       console.error('[Agora] Join failed — full error:', err)
       console.error('[Agora] Error code:', err.code)
       console.error('[Agora] Error message:', err.message)
-      setError(`Failed to join the call: ${err.message || err.code || 'Unknown error'}`)
+      setError(
+        `Failed to join the call: ${err.message || err.code || 'Unknown error'}`
+      )
     }
   }, [joined])
 
