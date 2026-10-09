@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { ref, onValue, remove } from 'firebase/database'
+import { db } from '../firebase'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useEmergencySession, generateSessionId } from '../hooks/useEmergencySession'
 import { usePatientDispatch } from '../hooks/useDispatch'
@@ -64,7 +66,7 @@ function Emergency() {
   // Countdown → failed after 20s IF nobody accepted
   useEffect(() => {
     if (dispatchStage !== 'waiting') return
-    if (poolStatus === 'accepted') return // don't fail if accepted
+    if (poolStatus === 'accepted') return
 
     if (countdown <= 0) {
       setDispatchStage('failed')
@@ -74,6 +76,23 @@ function Emergency() {
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000)
     return () => clearTimeout(timer)
   }, [dispatchStage, countdown, poolStatus])
+
+  // ─── Watch Firebase call signal — end our call if the ambulance ends it ───
+  useEffect(() => {
+    if (!callActive || !sessionId) return
+
+    const callRef = ref(db, `emergencies/${sessionId}/call`)
+    const unsubscribe = onValue(callRef, (snapshot) => {
+      const data = snapshot.val()
+      // If signal removed or inactive → other side ended the call
+      if (!data || !data.active) {
+        console.log('[Call] Ambulance ended the call — ending our side')
+        setCallActive(false)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [callActive, sessionId])
 
   const toggleSharing = async () => {
     if (sharing) {
@@ -105,7 +124,6 @@ function Emergency() {
       if (!location) fetchLocation()
     }
 
-    // Broadcast to the pool
     await broadcastEmergency()
   }
 
@@ -123,6 +141,17 @@ function Emergency() {
     }
   }
 
+  // ─── Called when the patient ends the call ───
+  const handleCallEnd = async () => {
+    // Delete the Firebase signal so the ambulance's call ends too
+    try {
+      await remove(ref(db, `emergencies/${sessionId}/call`))
+    } catch (err) {
+      console.error('Failed to end call:', err)
+    }
+    setCallActive(false)
+  }
+
   return (
     <main className="emergency-page">
 
@@ -138,7 +167,6 @@ function Emergency() {
       {/* ─── Dispatch block ────────────────────────────── */}
       <section className="emergency-call-block">
 
-        {/* IDLE */}
         {dispatchStage === 'idle' && poolStatus !== 'accepted' && (
           <>
             <button
@@ -159,7 +187,6 @@ function Emergency() {
           </>
         )}
 
-        {/* WAITING — pool pending, nobody accepted yet */}
         {dispatchStage === 'waiting' && poolStatus !== 'accepted' && (
           <div className="dispatch-card waiting">
             <div className="dispatch-spinner"></div>
@@ -185,7 +212,6 @@ function Emergency() {
           </div>
         )}
 
-        {/* ACCEPTED — an ambulance took the emergency */}
         {poolStatus === 'accepted' && assignedAmbulance && (
           <div className="dispatch-card accepted">
             <div className="dispatch-accepted-icon">✅</div>
@@ -215,7 +241,6 @@ function Emergency() {
           </div>
         )}
 
-        {/* FAILED — nobody accepted in time */}
         {dispatchStage === 'failed' && poolStatus !== 'accepted' && (
           <div className="dispatch-card failed">
             <div className="dispatch-failed-icon">❌</div>
@@ -260,7 +285,6 @@ function Emergency() {
           </button>
         </div>
 
-        {/* Session ID display */}
         <div className="session-share-block">
           <div className="session-share-head">
             <div>
@@ -306,7 +330,6 @@ function Emergency() {
 
         {error && <p className="location-error">{error}</p>}
 
-        {/* Ambulance tracker */}
         <div className="ambulance-tracker">
           <h3>🚑 Ambulance status</h3>
           {ambulanceLocation ? (
@@ -332,7 +355,6 @@ function Emergency() {
         </div>
       </section>
 
-      {/* Live map */}
       <section className="emergency-map-section">
         <h2>Live map</h2>
         <p className="map-subtitle">
@@ -344,7 +366,6 @@ function Emergency() {
         />
       </section>
 
-      {/* Contacts */}
       <section className="emergency-contacts">
         <h2>Emergency contacts</h2>
         <div className="contacts-grid">
@@ -366,7 +387,7 @@ function Emergency() {
           sessionId={sessionId}
           role="patient"
           autoStart={true}
-          onClose={() => setCallActive(false)}
+          onClose={handleCallEnd}
           remoteName={assignedAmbulance?.name || 'Ambulance'}
         />
       )}

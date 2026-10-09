@@ -48,7 +48,7 @@ function Ambulance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sharing, location, sessionId])
 
-  // ─── Listen for incoming calls (from patient) ─────
+  // ─── Watch the Firebase call signal ─────
   useEffect(() => {
     if (!sessionId) return
 
@@ -56,13 +56,18 @@ function Ambulance() {
     const unsubscribe = onValue(callRef, (snapshot) => {
       const data = snapshot.val()
 
+      // New incoming call from patient
       if (data?.active && data?.from === 'patient' && !callActive) {
         setIncomingCall(true)
         setCallFrom('patient')
       }
 
-      // If caller hung up, clear incoming state
-      if (!data?.active && !callActive) {
+      // Signal was removed or became inactive — the other side ended it
+      if (!data || !data.active) {
+        if (callActive) {
+          console.log('[Call] Patient ended the call — ending our side')
+          setCallActive(false)
+        }
         setIncomingCall(false)
         setCallFrom(null)
       }
@@ -90,7 +95,6 @@ function Ambulance() {
   }
 
   const handleLeave = async () => {
-    // Clean up any active call
     if (sessionId) {
       try {
         await remove(ref(db, `emergencies/${sessionId}/call`))
@@ -120,11 +124,10 @@ function Ambulance() {
     window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lng}`, '_blank')
   }
 
-  // ─── Call ambulance → patient ──────────────────────
+  // ─── Call patient (ambulance initiates) ─────────────
   const startCallToPatient = async () => {
     if (!sessionId) return
     try {
-      // Signal via Firebase
       await set(ref(db, `emergencies/${sessionId}/call`), {
         active: true,
         from: 'ambulance',
@@ -338,7 +341,7 @@ function Ambulance() {
         />
       </section>
 
-      {/* ─── Incoming call screen (patient calls us) ─── */}
+      {/* ─── Incoming call screen ─── */}
       {incomingCall && !callActive && (
         <CallScreen
           sessionId={sessionId}
@@ -350,7 +353,7 @@ function Ambulance() {
         />
       )}
 
-      {/* ─── Active call (both sides) ──────────────── */}
+      {/* ─── Active call ──────────────── */}
       {callActive && (
         <CallScreen
           sessionId={sessionId}
