@@ -8,8 +8,12 @@ function CallScreen({
   autoStart = false,
   incomingCall = false,
   ringing = false,
+  videoRequested = false,
+  videoRequestStatus = null,
   onClose,
   onAccept,
+  onRequestVideo,
+  onRespondToVideoRequest,
   remoteName = 'Caller',
 }) {
   const {
@@ -29,9 +33,10 @@ function CallScreen({
   const localVideoRef = useRef(null)
   const [seconds, setSeconds] = useState(0)
 
+  const isAmbulance = role === 'ambulance'
+
   // Auto-join when not ringing and autoStart is true
   useEffect(() => {
-    // Don't join while ringing — wait for the parent to switch ringing off
     if (ringing) return
     if (autoStart && !joined) {
       join(sessionId, false)
@@ -54,6 +59,14 @@ function CallScreen({
     }
   }, [cameraOn, localVideoTrack])
 
+  // ─── Auto-enable camera for the patient when they accept a video request ───
+  useEffect(() => {
+    if (!isAmbulance && videoRequestStatus === 'accepted' && !cameraOn) {
+      enableCamera()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoRequestStatus, isAmbulance, cameraOn])
+
   // Duration timer
   useEffect(() => {
     if (!joined) {
@@ -70,8 +83,6 @@ function CallScreen({
     return `${m}:${sec}`
   }
 
-  const isAmbulance = role === 'ambulance'
-
   const remoteHasVideo = remoteUsers.some((u) => u.videoTrack)
   const showVideoView = cameraOn || remoteHasVideo
 
@@ -80,7 +91,7 @@ function CallScreen({
     onClose?.()
   }
 
-  // ─── Incoming call screen (for the receiving side) ───
+  // ─── Incoming call screen (receiving side) ────────────
   if (incomingCall && !joined) {
     return (
       <div className="call-overlay">
@@ -110,7 +121,7 @@ function CallScreen({
     )
   }
 
-  // ─── Ringing screen (caller waiting for answer) ─────
+  // ─── Ringing screen (caller waiting for answer) ───────
   if (ringing) {
     return (
       <div className="call-overlay">
@@ -142,7 +153,7 @@ function CallScreen({
     )
   }
 
-  // ─── Active call screen ──────────────────────────────
+  // ─── Active call screen ───────────────────────────────
   return (
     <div className="call-overlay">
       <div className="call-screen">
@@ -166,11 +177,17 @@ function CallScreen({
               </div>
             )}
 
-            {!remoteHasVideo && cameraOn && (
+            {!remoteHasVideo && (
               <div className="call-video-remote call-video-waiting">
                 <div className="call-video-waiting-inner">
                   <div className="call-video-waiting-icon">📹</div>
-                  <p>Waiting for {remoteName}'s video…</p>
+                  <p>
+                    {videoRequestStatus === 'declined'
+                      ? `${remoteName} declined video`
+                      : videoRequestStatus === 'pending'
+                      ? `Waiting for ${remoteName} to accept…`
+                      : `Waiting for ${remoteName}'s video…`}
+                  </p>
                 </div>
               </div>
             )}
@@ -192,6 +209,31 @@ function CallScreen({
 
         {error && <p className="call-error">{error}</p>}
 
+        {/* PATIENT — video request consent banner */}
+        {!isAmbulance && videoRequested && videoRequestStatus === 'pending' && (
+          <div className="video-request-banner">
+            <div className="video-request-icon">📹</div>
+            <div className="video-request-text">
+              <strong>{remoteName} wants to see you</strong>
+              <span>Turn on your camera so they can see your surroundings.</span>
+            </div>
+            <div className="video-request-actions">
+              <button
+                className="video-request-decline"
+                onClick={() => onRespondToVideoRequest?.(false)}
+              >
+                Not now
+              </button>
+              <button
+                className="video-request-accept"
+                onClick={() => onRespondToVideoRequest?.(true)}
+              >
+                Allow camera
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="call-controls">
           <button
             className={`call-control-btn ${micMuted ? 'active' : ''}`}
@@ -201,23 +243,37 @@ function CallScreen({
             {micMuted ? '🔇' : '🎤'}
           </button>
 
-          {isAmbulance && (
+          {/* AMBULANCE — request patient's video */}
+          {isAmbulance && !cameraOn && (
             <button
-              className={`call-control-btn ${cameraOn ? 'active' : ''}`}
-              onClick={cameraOn ? disableCamera : enableCamera}
-              title={cameraOn ? 'Turn off camera' : 'Switch to video'}
+              className="call-control-btn request-video"
+              onClick={onRequestVideo}
+              disabled={videoRequested}
+              title={videoRequested ? 'Request sent' : 'Request patient video'}
             >
-              {cameraOn ? '📹' : '📷'}
+              {videoRequested ? '⏳' : '📷'}
             </button>
           )}
 
-          {!isAmbulance && cameraOn && (
+          {/* AMBULANCE — turn own camera on/off */}
+          {isAmbulance && cameraOn && (
             <button
-              className="call-control-btn"
+              className="call-control-btn active"
               onClick={disableCamera}
               title="Turn off camera"
             >
               📹
+            </button>
+          )}
+
+          {/* PATIENT — turn own camera on/off */}
+          {!isAmbulance && (
+            <button
+              className={`call-control-btn ${cameraOn ? 'active' : ''}`}
+              onClick={cameraOn ? disableCamera : enableCamera}
+              title={cameraOn ? 'Turn off camera' : 'Turn on camera'}
+            >
+              {cameraOn ? '📹' : '📷'}
             </button>
           )}
 
@@ -230,10 +286,9 @@ function CallScreen({
           </button>
         </div>
 
-        {isAmbulance && !cameraOn && !remoteHasVideo && joined && (
+        {isAmbulance && !cameraOn && !videoRequested && !remoteHasVideo && joined && (
           <p className="call-hint">
-            Tap <strong>📷</strong> to switch to video if you need to see the
-            patient.
+            Tap <strong>📷</strong> to request the patient's video.
           </p>
         )}
 
