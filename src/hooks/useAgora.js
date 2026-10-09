@@ -57,7 +57,7 @@ export function useAgora() {
       // ─── Fetch an Agora token from our serverless function ───
       console.log('[Agora] Fetching token for channel:', channelName)
       const tokenRes = await fetch(
-        `/api/agora-token.mjs?channel=${encodeURIComponent(channelName)}&uid=0`
+        `/api/agora-token?channel=${encodeURIComponent(channelName)}&uid=0`
       )
 
       if (!tokenRes.ok) {

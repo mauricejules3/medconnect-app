@@ -1,9 +1,9 @@
 // Vercel Serverless Function — Agora token generator
-// GET /api/agora-token.mjs?channel=EMG-XXXXX&uid=0
+// GET /api/agora-token?channel=EMG-XXXXX&uid=0
 
-import { RtcTokenBuilder, RtcRole } from 'agora-token'
+const { RtcTokenBuilder, RtcRole } = require('agora-token')
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
@@ -21,13 +21,11 @@ export default async function handler(req, res) {
   const appCertificate = process.env.AGORA_APP_CERTIFICATE
 
   if (!appId) {
-    return res.status(500).json({ error: 'Missing VITE_AGORA_APP_ID on server' })
+    return res.status(500).json({ error: 'Missing VITE_AGORA_APP_ID' })
   }
 
   if (!appCertificate) {
-    return res.status(500).json({
-      error: 'Missing AGORA_APP_CERTIFICATE on server',
-    })
+    return res.status(500).json({ error: 'Missing AGORA_APP_CERTIFICATE' })
   }
 
   try {
@@ -48,7 +46,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ token, uid: uidNumber, channel })
   } catch (err) {
-    console.error('[agora-token] Failed to generate token:', err)
+    console.error('[agora-token] Failed:', err)
     return res.status(500).json({ error: 'Token generation failed' })
   }
 }
